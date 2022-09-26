@@ -31,7 +31,7 @@ function addEmberGetImport(fileSource, j) {
   return root.toSource();
 }
 
-function cleanupMacrosImports(macrosImported, fileSource, j) {
+function cleanupMacrosImports(macrosImported, fileSource, j, computedAlias) {
   let root = j(fileSource);
 
   macrosImported.forEach((val) => {
@@ -47,18 +47,25 @@ function cleanupMacrosImports(macrosImported, fileSource, j) {
           },
         },
       });
-    } else {
-      calls = root.find(j.ObjectProperty, {
-        value: {
-          type: 'CallExpression',
-          callee: {
+    } else if (val == 'array' || val == 'string' || val == 'math') {
+      calls = root.find(j.CallExpression, {
+        callee: {
+          type: 'MemberExpression',
+          object: {
             name: val,
           },
+        },
+      });
+    } else if (val != computedAlias) {
+      calls = root.find(j.CallExpression, {
+        callee: {
+          name: val,
         },
       });
     }
 
     if (calls.length === 0) {
+      if (val != computedAlias) {
       root
         .find(j.ImportSpecifier, {
           local: {
@@ -73,15 +80,16 @@ function cleanupMacrosImports(macrosImported, fileSource, j) {
           },
         })
         .remove();
-
+      }
+      
       root
         .find(j.ImportDeclaration)
         .filter((path) => {
           return (
-            (path.node.source.value === 'ember-awesome-macros' ||
+            (path.node.source.value.startsWith('ember-awesome-macros') ||
               path.node.source.value === 'ember-macro-helpers/computed' ||
               path.node.source.value === 'ember-macro-helpers/raw') &&
-            path.node.specifiers.length === 0
+            (path.node.specifiers.length === 0 || val == computedAlias)
           );
         })
         .remove();
@@ -91,8 +99,8 @@ function cleanupMacrosImports(macrosImported, fileSource, j) {
   return root.toSource();
 }
 
-function cleanupImports(macrosImported, fileSource, j) {
-  return cleanupMacrosImports(macrosImported, addEmberGetImport(fileSource, j), j);
+function cleanupImports(macrosImported, fileSource, j, computedAlias) {
+  return cleanupMacrosImports(macrosImported, addEmberGetImport(fileSource, j), j, computedAlias);
 }
 
 module.exports = {
