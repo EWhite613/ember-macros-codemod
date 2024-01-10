@@ -7,10 +7,12 @@ module.exports = function transformer(file, api) {
   const root = j(file.source);
 
   replaceEmberComputedImport(root, j);
+  return root.toSource();
 };
 
 function replaceEmberComputedImport(root, j) {
   // Find the import declaration for 'ember-macro-helpers/computed'
+  debugger;
   const computedImport = root.find(j.ImportDeclaration, {
     source: { value: 'ember-macro-helpers/computed' },
   });
@@ -29,14 +31,12 @@ function replaceEmberComputedImport(root, j) {
       emberObjectImport.get('specifiers').push(j.importSpecifier(j.identifier('computed')));
     } else {
       // If '@ember/object' is not already being imported, add a new import declaration
-      root
-        .get('body')
-        .unshift(
-          j.importDeclaration(
-            [j.importSpecifier(j.identifier('computed'))],
-            j.literal('@ember/object')
-          )
-        );
+      j(root.find(j.ImportDeclaration).at(0).get()).insertBefore(
+        j.importDeclaration(
+          [j.importSpecifier(j.identifier('computed'))],
+          j.literal('@ember/object')
+        )
+      );
     }
   }
 }
