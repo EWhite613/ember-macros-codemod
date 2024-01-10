@@ -1,13 +1,13 @@
 const { getParser } = require('codemod-cli').jscodeshift;
 
-/*
-*
-* TODO:
-* Determine if want to use get instead of getProperties
-* Handle arg defaults
-* Handle typescript typings on args
-* Handle class based decorators version(? do we have any usages like this)
-*/
+/**
+ * TODO:
+ * Determine if want to use get instead of getProperties
+ * Handle arg defaults
+ * Handle destructuring args (rever-macros seems to have this, can take from there)
+ * Handle typescript typings on args
+ * Handle class based decorators version(? do we have any usages like this?). Think it's mainly classic
+ */
 
 module.exports = function transformer(file, api) {
   const j = getParser(api);
@@ -24,7 +24,6 @@ function replaceEmberComputedImport(root, j) {
   const computedImport = root.find(j.ImportDeclaration, {
     source: { value: 'ember-macro-helpers/computed' },
   });
-
 
   if (computedImport.size() > 0) {
     const computedVariableName = computedImport.find(j.Identifier).get().value.name; // This is most likely 'computed'
