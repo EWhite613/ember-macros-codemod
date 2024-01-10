@@ -31,7 +31,7 @@ function replaceEmberComputedImport(root, j) {
       emberObjectImport.get('specifiers').push(j.importSpecifier(j.identifier('computed')));
     } else {
       // If '@ember/object' is not already being imported, add a new import declaration
-      j(root.find(j.ImportDeclaration).at(0).get()).insertBefore(
+      j(root.find(j.ImportDeclaration).at(0).get()).insertAfter(
         j.importDeclaration(
           [j.importSpecifier(j.identifier('computed'))],
           j.literal('@ember/object')
