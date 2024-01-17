@@ -39,18 +39,12 @@ function replaceEmberComputedImport(root, j) {
       // If '@ember/object' is already being imported, add 'computed' to the import specifiers
       emberObjectImport
         .get('specifiers')
-        .push(
-          j.importSpecifier(j.identifier('computed')),
-          j.importSpecifier(j.identifier('getProperties'))
-        );
+        .push(j.importSpecifier(j.identifier('computed')), j.importSpecifier(j.identifier('get')));
     } else {
       // If '@ember/object' is not already being imported, add a new import declaration
       j(root.find(j.ImportDeclaration).at(0).get()).insertAfter(
         j.importDeclaration(
-          [
-            j.importSpecifier(j.identifier('computed')),
-            j.importSpecifier(j.identifier('getProperties')),
-          ],
+          [j.importSpecifier(j.identifier('computed')), j.importSpecifier(j.identifier('get'))],
           j.literal('@ember/object')
         )
       );
@@ -80,26 +74,19 @@ function updateMacroComputedUsageToEmberComputed(root, j, { computedVariableName
           otherArguments.map((arg) => getArgumentRawValue(arg))
         );
 
-        const objectPatternIdentifiers = existingParams.map((identifier, index) =>
-          j.property(
-            'init',
-            j.identifier(argumentsToMoveAndGet[index]),
-            j.identifier(identifier.name)
-          )
-        );
-        // Add the getProperties call as the first line in the function body
-        callbackFunc.body.body.unshift(
-          j.variableDeclaration('const', [
+        const newGetters = existingParams.map((identifier, index) => {
+          return j.variableDeclaration('const', [
             j.variableDeclarator(
-              // TODO: Can probably do with getProperties if we detect a non nested prop. May also be wise to just use `get` instead so easier to write codemod
-              j.objectPattern(objectPatternIdentifiers),
-              j.callExpression(j.identifier('getProperties'), [
+              j.identifier(identifier),
+              j.callExpression(j.identifier('get'), [
                 j.thisExpression(),
-                ...argumentsToMoveAndGet.map((arg) => j.literal(arg)),
+                j.literal(argumentsToMoveAndGet[index]),
               ])
             ),
-          ])
-        );
+          ]);
+        });
+
+        callbackFunc.body.body.unshift(...newGetters);
       }
     });
 }
