@@ -39,12 +39,20 @@ function replaceEmberComputedImport(root, j) {
       // If '@ember/object' is already being imported, add 'computed' to the import specifiers
       emberObjectImport
         .get('specifiers')
-        .push(j.importSpecifier(j.identifier('computed')), j.importSpecifier(j.identifier('get')));
+        .push(
+          j.importSpecifier(j.identifier('computed')),
+          j.importSpecifier(j.identifier('get')),
+          j.importSpecifier(j.identifier('getWithDefault'))
+        );
     } else {
       // If '@ember/object' is not already being imported, add a new import declaration
       j(root.find(j.ImportDeclaration).at(0).get()).insertAfter(
         j.importDeclaration(
-          [j.importSpecifier(j.identifier('computed')), j.importSpecifier(j.identifier('get'))],
+          [
+            j.importSpecifier(j.identifier('computed')),
+            j.importSpecifier(j.identifier('get')),
+            j.importSpecifier(j.identifier('getWithDefault')),
+          ],
           j.literal('@ember/object')
         )
       );
@@ -75,20 +83,34 @@ function updateMacroComputedUsageToEmberComputed(root, j, { computedVariableName
         );
 
         const newGetters = existingParams.map((identifier, index) => {
-          return j.variableDeclaration('const', [
-            j.variableDeclarator(
-              j.identifier(identifier),
-              j.callExpression(j.identifier('get'), [
-                j.thisExpression(),
-                j.literal(argumentsToMoveAndGet[index]),
-              ])
-            ),
-          ]);
+          if (identifier.type === 'AssignmentPattern') {
+            return _createNewGetter(
+              j,
+              identifier.left.name,
+              argumentsToMoveAndGet[index],
+              identifier.right
+            );
+          }
+          return _createNewGetter(j, identifier.name, argumentsToMoveAndGet[index]);
         });
 
         callbackFunc.body.body.unshift(...newGetters);
       }
     });
+}
+
+function _createNewGetter(j, identifierName, propertyPath, defaultValueNode) {
+  const expressionArgs = [j.thisExpression(), j.literal(propertyPath)];
+  let getOrDefault = defaultValueNode ? 'getWithDefault' : 'get';
+  if (defaultValueNode) {
+    if (defaultValueNode) expressionArgs.push(defaultValueNode);
+  }
+  return j.variableDeclaration('const', [
+    j.variableDeclarator(
+      j.identifier(identifierName),
+      j.callExpression(j.identifier(getOrDefault), expressionArgs)
+    ),
+  ]);
 }
 
 function flattenDependencies(dependencyPaths) {
