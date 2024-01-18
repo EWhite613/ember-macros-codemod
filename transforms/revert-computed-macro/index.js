@@ -41,7 +41,8 @@ function replaceEmberComputedImport(root, j) {
       // If '@ember/object' is already being imported, add 'computed' to the import specifiers
       const currentSpecifierImports = emberObjectImport
         .get('specifiers')
-        .value.map((importSpecfiers) => importSpecfiers.imported.name);
+        .value.map((importSpecfiers) => importSpecfiers.imported?.name)
+        .filter((e) => e !== undefined);
 
       const emberObjectImportSpecifiers = emberObjectImport.get('specifiers');
       const importsToAdd = ['computed', 'get', 'getWithDefault'];
