@@ -1,7 +1,7 @@
 function expandProperties(pathToExpand) {
   let results = [];
   _expandProperties(pathToExpand, (r) => {
-    results.push(r.replace('.[]', ''));
+    results.push(r.replace('.[]', '').replace(/\.@each.+/, ''));
   });
 
   return results;
