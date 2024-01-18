@@ -1,3 +1,5 @@
+const { expandProperties } = require('./expand-properties');
+
 const { getParser } = require('codemod-cli').jscodeshift;
 
 /**
@@ -37,13 +39,18 @@ function replaceEmberComputedImport(root, j) {
 
     if (emberObjectImport.size() > 0) {
       // If '@ember/object' is already being imported, add 'computed' to the import specifiers
-      emberObjectImport
+      const currentSpecifierImports = emberObjectImport
         .get('specifiers')
-        .push(
-          j.importSpecifier(j.identifier('computed')),
-          j.importSpecifier(j.identifier('get')),
-          j.importSpecifier(j.identifier('getWithDefault'))
-        );
+        .value.map((importSpecfiers) => importSpecfiers.imported.name);
+
+      const emberObjectImportSpecifiers = emberObjectImport.get('specifiers');
+      const importsToAdd = ['computed', 'get', 'getWithDefault'];
+
+      importsToAdd.forEach((importToAdd) => {
+        if (!currentSpecifierImports.includes(importToAdd)) {
+          emberObjectImportSpecifiers.push(j.importSpecifier(j.identifier(importToAdd)));
+        }
+      });
     } else {
       // If '@ember/object' is not already being imported, add a new import declaration
       j(root.find(j.ImportDeclaration).at(0).get()).insertAfter(
@@ -115,7 +122,10 @@ function _createNewGetter(j, identifierName, propertyPath, defaultValueNode) {
 
 function flattenDependencies(dependencyPaths) {
   // TODO: FIXME: to flatten
-  return dependencyPaths;
+
+  return dependencyPaths.reduce((dependencyPaths, depPath) => {
+    return [...dependencyPaths, ...expandProperties(depPath)];
+  }, []);
 }
 
 function getArgumentRawValue(arg) {
