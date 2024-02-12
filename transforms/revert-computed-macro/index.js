@@ -80,7 +80,10 @@ function updateMacroComputedUsageToEmberComputed(root, j, { computedVariableName
       const callExpression = path.value;
       const callbackFunc = callExpression.arguments[path.value.arguments.length - 1];
 
-      if (callbackFunc.type === 'FunctionExpression') {
+      if (
+        callbackFunc.type === 'FunctionExpression' ||
+        callbackFunc.type === 'ArrowFunctionExpression'
+      ) {
         const otherArguments = path.value.arguments.slice(0, -1);
         const existingParams = callbackFunc.params;
         // Remove the existing parameters
@@ -101,8 +104,9 @@ function updateMacroComputedUsageToEmberComputed(root, j, { computedVariableName
           }
           return _createNewGetter(j, identifier.name, argumentsToMoveAndGet[index]);
         });
-
-        callbackFunc.body.body.unshift(...newGetters);
+        if (callbackFunc.body.body) {
+          callbackFunc.body.body.unshift(...newGetters);
+        }
       }
     });
 }
