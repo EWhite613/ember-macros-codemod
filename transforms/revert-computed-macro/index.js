@@ -90,7 +90,7 @@ function updateMacroComputedUsageToEmberComputed(root, j, { computedVariableName
         callbackFunc.params = [];
 
         const argumentsToMoveAndGet = flattenDependencies(
-          otherArguments.map((arg) => getArgumentRawValue(arg))
+          otherArguments.map((arg) => getArgumentRawValue(arg) ?? arg)
         );
 
         const newGetters = existingParams.map((identifier, index) => {
@@ -112,7 +112,10 @@ function updateMacroComputedUsageToEmberComputed(root, j, { computedVariableName
 }
 
 function _createNewGetter(j, identifierName, propertyPath, defaultValueNode) {
-  const expressionArgs = [j.thisExpression(), j.literal(propertyPath)];
+  const expressionArgs = [
+    j.thisExpression(),
+    typeof propertyPath === 'string' ? j.literal(propertyPath) : propertyPath,
+  ];
   let getOrDefault = defaultValueNode ? 'getWithDefault' : 'get';
   if (defaultValueNode) {
     if (defaultValueNode) expressionArgs.push(defaultValueNode);

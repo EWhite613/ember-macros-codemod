@@ -1,10 +1,15 @@
 function expandProperties(pathToExpand) {
-  let results = [];
-  _expandProperties(pathToExpand, (r) => {
-    results.push(r.replace('.[]', '').replace(/\.@each.+/, ''));
-  });
+  if (typeof pathToExpand === 'string') {
+    let results = [];
 
-  return results;
+    _expandProperties(pathToExpand, (r) => {
+      results.push(r.replace('.[]', '').replace(/\.@each.+/, ''));
+    });
+
+    return results;
+  }
+
+  return [pathToExpand]
 }
 
 function assert() {}
