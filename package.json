@@ -2,14 +2,6 @@
   "name": "ember-macros-codemod",
   "version": "0.2.0",
   "description": "A collection of codemod's for macros.",
-  "scripts": {
-    "lint": "eslint --cache .",
-    "test": "codemod-cli test",
-    "test:coverage": "codemod-cli test --coverage",
-    "update-docs": "codemod-cli update-docs",
-    "coveralls": "cat ./coverage/lcov.info | node node_modules/.bin/coveralls"
-  },
-  "bin": "./bin/cli.js",
   "keywords": [
     "codemod-cli",
     "codemod",
@@ -21,23 +13,32 @@
   ],
   "repository": "https://github.com/concordnow/ember-macros-codemod",
   "license": "MIT",
-  "author": "Concord Worlwide Inc.",
+  "author": "Anthony Zhu",
+  "bin": "dist/cli.js",
+  "scripts": {
+    "build": "tspc --build",
+    "lint": "eslint src --ext .ts",
+    "test": "npm run lint"
+  },
   "dependencies": {
-    "codemod-cli": "^3.2.0"
+    "jscodeshift": "^0.15.2"
   },
   "devDependencies": {
-    "coveralls": "^3.0.6",
-    "eslint": "^7.32.0",
-    "eslint-config-prettier": "^6.11.0",
+    "@types/jscodeshift": "^0.11.11",
+    "@types/node": "^20.12.7",
+    "@typescript-eslint/eslint-plugin": "^6.20.0",
+    "@typescript-eslint/parser": "^6.20.0",
+    "ast-types": "^0.14.2",
+    "eslint": "^8.56.0",
+    "eslint-plugin-import": "^2.29.1",
     "eslint-plugin-node": "^11.1.0",
-    "eslint-plugin-prettier": "^3.1.3",
-    "jest": "^24.9.0",
-    "prettier": "^2.0.5"
+    "ts-node": "^10.9.2",
+    "ts-patch": "^3.1.1",
+    "tsconfig-paths": "^4.2.0",
+    "typescript": "^5.0.4",
+    "typescript-transform-paths": "^3.4.6"
   },
   "engines": {
-    "node": ">= 11"
-  },
-  "jest": {
-    "testEnvironment": "node"
+    "node": ">= 18"
   }
 }

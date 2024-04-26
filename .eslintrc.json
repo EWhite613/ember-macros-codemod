@@ -1,0 +1,82 @@
+{
+  "env": {
+    "browser": true,
+    "es6": true,
+    "node": true,
+    "es2021": true
+  },
+  "extends": [
+    "eslint:recommended",
+    "plugin:import/recommended"
+  ],
+  "parser": "@typescript-eslint/parser",
+  "parserOptions": {
+    "ecmaFeatures": {
+      "jsx": true
+    },
+    "ecmaVersion": "latest",
+    "sourceType": "module"
+  },
+  "plugins": [
+    "import",
+    "@typescript-eslint"
+  ],
+  "rules": {
+    "no-trailing-spaces": "error",
+    "no-multiple-empty-lines": "error",
+    "indent": ["error", 2, {"SwitchCase": 1}],
+    "linebreak-style": ["error", "unix"],
+    "quotes": ["error", "single"],
+    "curly": "error",
+    "complexity": ["error", 8],
+    "no-console": ["error", {"allow": ["warn", "error", "debug", "info"]}],
+    "no-unused-expressions": ["error", {"allowTernary": true}],
+    "comma-dangle": ["error"],
+    "object-shorthand": "error",
+    "semi": ["error", "never"],
+    "object-curly-spacing": ["error", "never"],
+    "array-bracket-spacing": ["error", "never"],
+    "no-unused-vars": [
+      "error",
+      {
+        "argsIgnorePattern": "^_",
+        "ignoreRestSiblings": true,
+        "args": "none"
+      }
+    ],
+    "space-before-function-paren": ["error", "always"],
+    "keyword-spacing": "error",
+    "space-infix-ops": "error",
+    "import/order": "error",
+    "eol-last": "error",
+    "import/no-unresolved": "off",
+    "import/unambiguous": "off",
+    "import/first": "error",
+    "import/no-namespace": "error",
+    "import/newline-after-import": "error",
+    "import/no-relative-parent-imports": "error",
+    "@typescript-eslint/consistent-type-imports": "error",
+    "@typescript-eslint/member-delimiter-style": [
+      "error",
+      {
+        "multiline": {
+          "delimiter": "none",
+          "requireLast": true
+        },
+        "singleline": {
+          "delimiter": "comma",
+          "requireLast": false
+        }
+      }
+    ]
+  },
+  "settings": {
+    "import/resolver": {
+      "node": {
+        "extensions": [".js", ".jsx", ".ts", ".tsx"],
+        "moduleDirectory": ["node_modules", "src/"]
+      }
+    },
+    "import/ignore": "node_modules"
+  }
+}
