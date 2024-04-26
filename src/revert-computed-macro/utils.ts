@@ -42,7 +42,7 @@ function _expandProperties (pathToExpand: string | ASTNode) {
   if (typeof pathToExpand === 'string') {
     let results: Array<string> = []
 
-    _expand(pathToExpand, (r) => {
+    _expand(pathToExpand, (r: string) => {
       results.push(r.replace('.[]', '').replace(/\.@each.+/, ''))
     })
 
@@ -53,7 +53,7 @@ function _expandProperties (pathToExpand: string | ASTNode) {
 }
 
 // Copied from https://github.com/emberjs/ember.js/blob/main/packages/%40ember/-internals/metal/lib/expand_properties.ts#L39
-function _expand (pattern, callback) {
+function _expand (pattern: string, callback: (r: string) => void) {
 
   let start = pattern.indexOf('{')
   if (start < 0) {
@@ -63,7 +63,7 @@ function _expand (pattern, callback) {
   }
 }
 
-function _dive (prefix, pattern, start, callback) {
+function _dive (prefix: string, pattern: string, start: number, callback: (r: string) => void) {
   let end = pattern.indexOf('}'),
     i = 0,
     newStart,
