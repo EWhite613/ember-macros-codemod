@@ -32,41 +32,9 @@ function replaceEmberComputedImport(root, j) {
     // Remove the old import
     computedImport.remove();
 
-    // Find the import declaration for '@ember/object'
-    const emberObjectImport = root.find(j.ImportDeclaration, {
-      source: { value: '@ember/object' },
-    });
-
-    if (emberObjectImport.size() > 0) {
-      // If '@ember/object' is already being imported, add 'computed' to the import specifiers
-      const currentSpecifierImports = emberObjectImport
-        .get('specifiers')
-        .value.map((importSpecfiers) => importSpecfiers.imported?.name)
-        .filter((e) => e !== undefined);
-
-      const emberObjectImportSpecifiers = emberObjectImport.get('specifiers');
-      const importsToAdd = ['computed', 'get', 'getWithDefault'];
-
-      importsToAdd.forEach((importToAdd) => {
-        if (!currentSpecifierImports.includes(importToAdd)) {
-          emberObjectImportSpecifiers.push(j.importSpecifier(j.identifier(importToAdd)));
-        }
-      });
-    } else {
-      // If '@ember/object' is not already being imported, add a new import declaration
-      j(root.find(j.ImportDeclaration).at(0).get()).insertAfter(
-        j.importDeclaration(
-          [
-            j.importSpecifier(j.identifier('computed')),
-            j.importSpecifier(j.identifier('get')),
-            j.importSpecifier(j.identifier('getWithDefault')),
-          ],
-          j.literal('@ember/object')
-        )
-      );
-    }
-
     updateMacroComputedUsageToEmberComputed(root, j, { computedVariableName });
+    addComputedImport(root, j);
+    updateEmberObjectImportStatementPostComputedUpdate(root, j);
   }
 }
 
@@ -104,11 +72,72 @@ function updateMacroComputedUsageToEmberComputed(root, j, { computedVariableName
           }
           return _createNewGetter(j, identifier.name, argumentsToMoveAndGet[index]);
         });
+
         if (callbackFunc.body.body) {
           callbackFunc.body.body.unshift(...newGetters);
         }
       }
     });
+}
+
+function addComputedImport(root, j) {
+  // Find the import declaration for '@ember/object'
+  const emberObjectImport = root.find(j.ImportDeclaration, {
+    source: { value: '@ember/object' },
+  });
+
+  if (emberObjectImport.size() > 0) {
+    // If '@ember/object' is already being imported, add 'computed' to the import specifiers
+    const currentSpecifierImports = emberObjectImport
+      .get('specifiers')
+      .value.map((importSpecfiers) => importSpecfiers.imported?.name)
+      .filter((e) => e !== undefined);
+
+    const emberObjectImportSpecifiers = emberObjectImport.get('specifiers');
+
+    if (!currentSpecifierImports.includes('computed')) {
+      emberObjectImportSpecifiers.push(j.importSpecifier(j.identifier('computed')));
+    }
+  } else {
+    // If '@ember/object' is not already being imported, add a new import declaration
+    j(root.find(j.ImportDeclaration).at(0).get()).insertAfter(
+      j.importDeclaration([j.importSpecifier(j.identifier('computed'))], j.literal('@ember/object'))
+    );
+  }
+}
+
+function updateEmberObjectImportStatementPostComputedUpdate(root, j) {
+  const emberObjectImport = root.find(j.ImportDeclaration, {
+    source: { value: '@ember/object' },
+  });
+
+  const currentSpecifierImports = emberObjectImport
+    .get('specifiers')
+    .value.map((importSpecfiers) => importSpecfiers.imported?.name)
+    .filter((e) => e !== undefined);
+
+  const emberObjectImportSpecifiers = emberObjectImport.get('specifiers');
+
+  const hasGet =
+    root.find(j.CallExpression, {
+      callee: { name: 'get' },
+    }).length > 0;
+
+  const hasGetWithDefault =
+    root.find(j.CallExpression, {
+      callee: { name: 'getWithDefault' },
+    }).length > 0;
+
+  const importsToAdd = [
+    ...(hasGet ? ['get'] : []),
+    ...(hasGetWithDefault ? ['getWithDefault'] : []),
+  ];
+
+  importsToAdd.forEach((importToAdd) => {
+    if (!currentSpecifierImports.includes(importToAdd)) {
+      emberObjectImportSpecifiers.push(j.importSpecifier(j.identifier(importToAdd)));
+    }
+  });
 }
 
 function _createNewGetter(j, identifierName, propertyPath, defaultValueNode) {
