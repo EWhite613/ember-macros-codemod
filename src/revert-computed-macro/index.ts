@@ -1,4 +1,5 @@
-import type {API, AssignmentPattern, Collection, FileInfo, FunctionDeclaration, Identifier, JSCodeshift, Options} from 'jscodeshift'
+import type {API, Collection, FileInfo, FunctionDeclaration, JSCodeshift, Options} from 'jscodeshift'
+import type {PatternKind} from 'ast-types/gen/kinds'
 import {
   createNewGetter,
   flattenDependencies,
@@ -22,7 +23,7 @@ export default function transformer (file: FileInfo, api: API, options: Options)
 
   _replaceEmberComputedImport(root, j)
 
-  return root.toSource()
+  return root.toSource({quote: 'single', objectCurlySpacing: false})
 }
 
 function _replaceEmberComputedImport (root: Collection, j: JSCodeshift) {
@@ -61,15 +62,19 @@ function _updateComputedUsage (root: Collection, j: JSCodeshift, computedVariabl
           otherArguments.map((arg) => getArgumentRawValue(arg) ?? arg)
         )
 
-        const newGetters = existingParams.map((identifier: Identifier | AssignmentPattern, index) => {
+        const newGetters = existingParams.map((parameter: PatternKind, index) => {
 
-          if (identifier.type === 'AssignmentPattern') {
-            const left = identifier.left as Identifier
-            const right = identifier.right as Identifier
-            return createNewGetter(j, left.name, argumentsToMoveAndGet[index], right)
+          if (index >= argumentsToMoveAndGet.length) {
+            return j.variableDeclaration('const', [j.variableDeclarator(parameter)])
           }
 
-          return createNewGetter(j, identifier.name, argumentsToMoveAndGet[index])
+          if (parameter.type === 'AssignmentPattern') {
+            const left = parameter.left
+            const right = parameter.right
+            return createNewGetter(j, left, argumentsToMoveAndGet[index], right)
+          }
+
+          return createNewGetter(j, parameter, argumentsToMoveAndGet[index])
         })
 
         if (callbackFunc.body.body) {

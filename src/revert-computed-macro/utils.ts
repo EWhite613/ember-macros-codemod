@@ -1,8 +1,9 @@
+import type {ExpressionKind, PatternKind} from 'ast-types/gen/kinds'
 import type {ASTNode, JSCodeshift, SpreadElement} from 'jscodeshift'
 
 const END_WITH_EACH_REGEX = /\.@each$/
 
-export function createNewGetter (j: JSCodeshift, identifierName: string, propertyPath: string | ASTNode, defaultValueNode?: ASTNode) {
+export function createNewGetter (j: JSCodeshift, variable: PatternKind, propertyPath: string | ASTNode, defaultValueNode?: ExpressionKind) {
   const expressionArgs = [
     j.thisExpression(),
     typeof propertyPath === 'string' ? j.literal(propertyPath) : propertyPath
@@ -16,7 +17,7 @@ export function createNewGetter (j: JSCodeshift, identifierName: string, propert
 
   return j.variableDeclaration('const', [
     j.variableDeclarator(
-      j.identifier(identifierName),
+      variable,
       j.callExpression(
         j.identifier(getOrDefault), expressionArgs as Array<SpreadElement>
       )
