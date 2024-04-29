@@ -65,10 +65,10 @@ function _expand (pattern: string, callback: (r: string) => void) {
 }
 
 function _dive (prefix: string, pattern: string, start: number, callback: (r: string) => void) {
-  let end = pattern.indexOf('}'),
-    i = 0,
-    newStart,
-    arrayLength
+  let end = pattern.indexOf('}')
+  let i = 0
+  let newStart = 0
+  let arrayLength = 0
   let tempArr = pattern.substring(start + 1, end).split(',')
   let after = pattern.substring(end + 1)
   prefix = prefix + pattern.substring(0, start)
