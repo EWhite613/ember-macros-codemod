@@ -6,12 +6,11 @@ import {
   getArgumentRawValue
 } from '@/revert-computed-macro/utils'
 
+export const parser = 'ts'
 
 /**
  * TODO:
  * Determine if want to use get instead of getProperties
- * Handle arg defaults
- * Handle destructuring args (rever-macros seems to have this, can take from there)
  * Handle typescript typings on args
  * Handle class based decorators version(? do we have any usages like this?). Think it's mainly classic
  */
@@ -122,20 +121,10 @@ function _updateEmberObjectImport (root: Collection, j: JSCodeshift) {
 
   const emberObjectImportSpecifiers = emberObjectImport.get('specifiers')
 
-  const hasGet =
-    root.find(j.CallExpression, {
-      callee: {name: 'get'}
-    }).length > 0
-
-  const hasGetWithDefault =
-    root.find(j.CallExpression, {
-      callee: {name: 'getWithDefault'}
-    }).length > 0
-
   const importsToAdd = [
-    ...(hasGet ? ['get'] : []),
-    ...(hasGetWithDefault ? ['getWithDefault'] : [])
-  ]
+    'get',
+    'getWithDefault'
+  ].filter(name => root.find(j.CallExpression, {callee: {name}}).length > 0)
 
   importsToAdd.forEach((importToAdd) => {
     if (!currentSpecifierImports.includes(importToAdd)) {
